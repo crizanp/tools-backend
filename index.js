@@ -11,7 +11,22 @@ const imageRoutes = require('./routes/image');
 const pdfRoutes = require('./routes/pdfConverter');
 
 const app = express();
-app.use(cors());
+
+// Normalize repeated slashes in the URL (e.g. //api -> /api) to avoid
+// platform or proxy redirects which break CORS preflight requests.
+app.use((req, res, next) => {
+  if (req.url && req.url.includes('//')) {
+    req.url = req.url.replace(/\/\/+/g, '/');
+  }
+  next();
+});
+
+// Use permissive CORS for development and allow preflight requests.
+// `origin: true` echoes the requesting origin which is safer than `*`
+// when credentials are used. For a strict production policy, replace
+// with an explicit origin whitelist.
+app.use(cors({ origin: true, methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS','HEAD'], allowedHeaders: ['Content-Type','Authorization','Accept','X-Requested-With'], credentials: true }));
+app.options('*', cors({ origin: true }));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
