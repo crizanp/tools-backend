@@ -65,4 +65,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || 'Server error' });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// When this file is run directly (node index.js) we start the server.
+// When imported (for example by Vercel serverless functions under /api),
+// we export the Express `app` without starting a listener.
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app;
