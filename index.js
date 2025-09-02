@@ -64,6 +64,16 @@ app.use('/tools/pdf-converter', pdfRoutes);
 
 app.get('/', (req, res) => res.send({ ok: true }));
 
+// Fallback: return a clear JSON 404 for unmatched routes so Vercel doesn't show its generic page.
+// For API paths we return a specific API not-found message; for other paths we return a hint
+// that this may be a frontend route (SPA) which should be served by the frontend.
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  return res.status(404).json({ error: 'Not found on backend. If this is a client-side route, ensure your frontend serves the page (SPA fallback).' });
+});
+
 // Global error handler to convert multer errors to JSON responses
 app.use((err, req, res, next) => {
   if (!err) return next();
